@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   color-scheme: light;
   font-family:
@@ -85,10 +89,12 @@ img {
   border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-.nav-links a:hover {
+.nav-links a:hover,
+.nav-links a:focus {
   background: rgba(255, 255, 255, 0.25);
   border-color: rgba(255, 255, 255, 0.4);
   transform: translateY(-2px);
+  outline: none;
 }
 
 .section {
@@ -202,8 +208,10 @@ img {
   transition: background 0.3s;
 }
 
-.carousel-btn:hover {
+.carousel-btn:hover,
+.carousel-btn:focus {
   background: rgba(0, 0, 0, 0.8);
+  outline: 2px solid white;
 }
 
 .carousel-btn.prev {
@@ -229,12 +237,18 @@ img {
   height: 10px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.5);
+  border: none;
+  padding: 0;
   cursor: pointer;
   transition: background 0.3s;
 }
 
 .dot.active {
   background: white;
+}
+
+.dot:focus {
+  outline: 2px solid white;
 }
 
 .work-section .grid {
@@ -307,11 +321,13 @@ img {
   border: 2px solid #5b21b6;
 }
 
-.contact-link:hover {
+.contact-link:hover,
+.contact-link:focus {
   background: #5b21b6;
   color: white;
   transform: translateY(-4px);
   box-shadow: 0 12px 30px rgba(91, 33, 182, 0.25);
+  outline: none;
 }
 
 .contact-icon {
@@ -320,7 +336,8 @@ img {
   transition: transform 0.3s ease;
 }
 
-.contact-link:hover .contact-icon {
+.contact-link:hover .contact-icon,
+.contact-link:focus .contact-icon {
   transform: scale(1.1);
 }
 
@@ -384,7 +401,8 @@ img {
   border-color: #0a66c2;
 }
 
-.linkedin-link:hover {
+.linkedin-link:hover,
+.linkedin-link:focus {
   background: #0a66c2;
   color: white;
 }
@@ -393,7 +411,8 @@ img {
   border-color: #171515;
 }
 
-.github-link:hover {
+.github-link:hover,
+.github-link:focus {
   background: #171515;
   color: white;
 }
@@ -402,7 +421,8 @@ img {
   border-color: #d84315;
 }
 
-.email-link:hover {
+.email-link:hover,
+.email-link:focus {
   background: #d84315;
   color: white;
 }
@@ -411,7 +431,8 @@ img {
   border-color: #00bfa5;
 }
 
-.phone-link:hover {
+.phone-link:hover,
+.phone-link:focus {
   background: #00bfa5;
   color: white;
 }
