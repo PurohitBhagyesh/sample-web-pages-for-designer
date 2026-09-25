@@ -9,6 +9,7 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
+    <script src="script.js" defer></script>
   </head>
   <body>
     <header class="site-header">
@@ -44,7 +45,7 @@
           </p>
         </div>
         <div class="profile-card">
-          <div class="photo-carousel" id="photoCarousel" aria-label="Photo Gallery">
+          <div class="photo-carousel" id="photoCarousel" tabindex="0" aria-label="Photo Gallery">
             <div class="carousel-container">
               <img
                 src="photo1.jpg"
@@ -62,12 +63,12 @@
             <button class="carousel-btn next" id="nextBtn" aria-label="Next Photo">
               ❯
             </button>
-            <div class="carousel-dots" id="carouselDots">
-              <button class="dot active" data-index="0" aria-label="Go to photo 1"></button>
-              <button class="dot" data-index="1" aria-label="Go to photo 2"></button>
-              <button class="dot" data-index="2" aria-label="Go to photo 3"></button>
-              <button class="dot" data-index="3" aria-label="Go to photo 4"></button>
-              <button class="dot" data-index="4" aria-label="Go to photo 5"></button>
+            <div class="carousel-dots" id="carouselDots" role="tablist" aria-label="Gallery Dots">
+              <button class="dot active" data-index="0" role="tab" aria-selected="true" aria-label="Go to photo 1"></button>
+              <button class="dot" data-index="1" role="tab" aria-selected="false" aria-label="Go to photo 2"></button>
+              <button class="dot" data-index="2" role="tab" aria-selected="false" aria-label="Go to photo 3"></button>
+              <button class="dot" data-index="3" role="tab" aria-selected="false" aria-label="Go to photo 4"></button>
+              <button class="dot" data-index="4" role="tab" aria-selected="false" aria-label="Go to photo 5"></button>
             </div>
           </div>
           <div>
@@ -167,87 +168,5 @@
         <p>Designed and built by Your Name.</p>
       </div>
     </footer>
-
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        let currentPhotoIndex = 0;
-        const photos = document.querySelectorAll(".carousel-photo");
-        const dots = document.querySelectorAll(".dot");
-        const totalPhotos = photos.length;
-        const carousel = document.getElementById("photoCarousel");
-        const prevBtn = document.getElementById("prevBtn");
-        const nextBtn = document.getElementById("nextBtn");
-        let autoSlideTimer = null;
-
-        function updateCarousel() {
-          photos.forEach((photo, index) => {
-            photo.classList.toggle("active", index === currentPhotoIndex);
-          });
-          dots.forEach((dot, index) => {
-            dot.classList.toggle("active", index === currentPhotoIndex);
-          });
-        }
-
-        function changePhoto(direction) {
-          currentPhotoIndex =
-            (currentPhotoIndex + direction + totalPhotos) % totalPhotos;
-          updateCarousel();
-        }
-
-        function goToPhoto(index) {
-          currentPhotoIndex = index;
-          updateCarousel();
-        }
-
-        function startAutoSlide() {
-          stopAutoSlide();
-          autoSlideTimer = setInterval(() => {
-            changePhoto(1);
-          }, 4000);
-        }
-
-        function stopAutoSlide() {
-          if (autoSlideTimer) {
-            clearInterval(autoSlideTimer);
-            autoSlideTimer = null;
-          }
-        }
-
-        prevBtn.addEventListener("click", () => {
-          changePhoto(-1);
-          startAutoSlide();
-        });
-
-        nextBtn.addEventListener("click", () => {
-          changePhoto(1);
-          startAutoSlide();
-        });
-
-        dots.forEach((dot) => {
-          dot.addEventListener("click", (e) => {
-            const index = parseInt(e.target.getAttribute("data-index"), 10);
-            goToPhoto(index);
-            startAutoSlide();
-          });
-        });
-
-        if (carousel) {
-          carousel.addEventListener("mouseenter", stopAutoSlide);
-          carousel.addEventListener("mouseleave", startAutoSlide);
-        }
-
-        document.addEventListener("keydown", (e) => {
-          if (e.key === "ArrowLeft") {
-            changePhoto(-1);
-            startAutoSlide();
-          } else if (e.key === "ArrowRight") {
-            changePhoto(1);
-            startAutoSlide();
-          }
-        });
-
-        startAutoSlide();
-      });
-    </script>
   </body>
 </html>
