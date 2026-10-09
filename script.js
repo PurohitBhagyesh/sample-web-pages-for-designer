@@ -1,140 +1,189 @@
 document.addEventListener("DOMContentLoaded", () => {
   const carousel = document.getElementById("photoCarousel");
-  if (!carousel) return;
+  if (carousel) {
+    const photos = carousel.querySelectorAll(".carousel-photo");
+    const dots = carousel.querySelectorAll(".dot");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const totalPhotos = photos.length;
 
-  const photos = carousel.querySelectorAll(".carousel-photo");
-  const dots = carousel.querySelectorAll(".dot");
-  const prevBtn = document.getElementById("prevBtn");
-  const nextBtn = document.getElementById("nextBtn");
-  const totalPhotos = photos.length;
+    if (totalPhotos > 0) {
+      let currentPhotoIndex = 0;
+      let autoSlideTimer = null;
+      let touchStartX = 0;
+      let touchEndX = 0;
 
-  if (totalPhotos === 0) return;
+      // Handle broken placeholder images dynamically with SVG visual fallbacks
+      photos.forEach((photo, index) => {
+        photo.addEventListener("error", () => {
+          const label = encodeURIComponent(`Photo ${index + 1}`);
+          photo.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="100%" height="100%" fill="%235b21b6"/><text x="50%" y="50%" fill="%23ffffff" font-family="sans-serif" font-size="24" text-anchor="middle" dominant-baseline="middle">${label}</text></svg>`;
+        });
+      });
 
-  let currentPhotoIndex = 0;
-  let autoSlideTimer = null;
-  let touchStartX = 0;
-  let touchEndX = 0;
+      function updateCarousel() {
+        photos.forEach((photo, index) => {
+          const isActive = index === currentPhotoIndex;
+          photo.classList.toggle("active", isActive);
+          photo.setAttribute("aria-hidden", !isActive);
+        });
 
-  // Handle broken placeholder images dynamically with SVG visual fallbacks
-  photos.forEach((photo, index) => {
-    photo.addEventListener("error", () => {
-      const label = encodeURIComponent(`Photo ${index + 1}`);
-      photo.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="100%" height="100%" fill="%235b21b6"/><text x="50%" y="50%" fill="%23ffffff" font-family="sans-serif" font-size="24" text-anchor="middle" dominant-baseline="middle">${label}</text></svg>`;
-    });
-  });
+        dots.forEach((dot, index) => {
+          const isActive = index === currentPhotoIndex;
+          dot.classList.toggle("active", isActive);
+          dot.setAttribute("aria-selected", isActive ? "true" : "false");
+          dot.setAttribute("tabindex", isActive ? "0" : "-1");
+        });
+      }
 
-  function updateCarousel() {
-    photos.forEach((photo, index) => {
-      const isActive = index === currentPhotoIndex;
-      photo.classList.toggle("active", isActive);
-      photo.setAttribute("aria-hidden", !isActive);
-    });
+      function changePhoto(direction) {
+        currentPhotoIndex =
+          (currentPhotoIndex + direction + totalPhotos) % totalPhotos;
+        updateCarousel();
+      }
 
-    dots.forEach((dot, index) => {
-      const isActive = index === currentPhotoIndex;
-      dot.classList.toggle("active", isActive);
-      dot.setAttribute("aria-selected", isActive ? "true" : "false");
-    });
-  }
+      function goToPhoto(index) {
+        currentPhotoIndex = index;
+        updateCarousel();
+      }
 
-  function changePhoto(direction) {
-    currentPhotoIndex =
-      (currentPhotoIndex + direction + totalPhotos) % totalPhotos;
-    updateCarousel();
-  }
+      function startAutoSlide() {
+        stopAutoSlide();
+        autoSlideTimer = setInterval(() => {
+          changePhoto(1);
+        }, 4000);
+      }
 
-  function goToPhoto(index) {
-    currentPhotoIndex = index;
-    updateCarousel();
-  }
+      function stopAutoSlide() {
+        if (autoSlideTimer) {
+          clearInterval(autoSlideTimer);
+          autoSlideTimer = null;
+        }
+      }
 
-  function startAutoSlide() {
-    stopAutoSlide();
-    autoSlideTimer = setInterval(() => {
-      changePhoto(1);
-    }, 4000);
-  }
+      if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+          changePhoto(-1);
+          startAutoSlide();
+        });
+      }
 
-  function stopAutoSlide() {
-    if (autoSlideTimer) {
-      clearInterval(autoSlideTimer);
-      autoSlideTimer = null;
+      if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+          changePhoto(1);
+          startAutoSlide();
+        });
+      }
+
+      dots.forEach((dot) => {
+        dot.addEventListener("click", (e) => {
+          const index = parseInt(e.currentTarget.getAttribute("data-index"), 10);
+          if (!isNaN(index)) {
+            goToPhoto(index);
+            startAutoSlide();
+          }
+        });
+      });
+
+      // Touch / Swipe support for mobile navigation
+      carousel.addEventListener(
+        "touchstart",
+        (e) => {
+          touchStartX = e.changedTouches[0].screenX;
+        },
+        { passive: true }
+      );
+
+      carousel.addEventListener(
+        "touchend",
+        (e) => {
+          touchEndX = e.changedTouches[0].screenX;
+          handleSwipe();
+        },
+        { passive: true }
+      );
+
+      function handleSwipe() {
+        const swipeThreshold = 40;
+        const diff = touchStartX - touchEndX;
+
+        if (Math.abs(diff) > swipeThreshold) {
+          if (diff > 0) {
+            changePhoto(1);
+          } else {
+            changePhoto(-1);
+          }
+          startAutoSlide();
+        }
+      }
+
+      // Hover and focus listeners for accessible auto-slide control
+      carousel.addEventListener("mouseenter", stopAutoSlide);
+      carousel.addEventListener("mouseleave", startAutoSlide);
+      carousel.addEventListener("focusin", stopAutoSlide);
+      carousel.addEventListener("focusout", startAutoSlide);
+
+      // Scoped keydown listener on the carousel container
+      carousel.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") {
+          changePhoto(-1);
+          startAutoSlide();
+        } else if (e.key === "ArrowRight") {
+          changePhoto(1);
+          startAutoSlide();
+        }
+      });
+
+      updateCarousel();
+      startAutoSlide();
     }
   }
 
-  if (prevBtn) {
-    prevBtn.addEventListener("click", () => {
-      changePhoto(-1);
-      startAutoSlide();
-    });
-  }
+  // Scrollspy navigation link highlighting
+  const navLinks = document.querySelectorAll(".nav-links a");
+  const sections = document.querySelectorAll("section[id]");
 
-  if (nextBtn) {
-    nextBtn.addEventListener("click", () => {
-      changePhoto(1);
-      startAutoSlide();
-    });
-  }
+  function highlightNavOnScroll() {
+    const scrollPosition = window.scrollY + 150;
 
-  dots.forEach((dot) => {
-    dot.addEventListener("click", (e) => {
-      const index = parseInt(e.target.getAttribute("data-index"), 10);
-      if (!isNaN(index)) {
-        goToPhoto(index);
-        startAutoSlide();
+    sections.forEach((section) => {
+      const sectionTop = section.offsetTop;
+      const sectionHeight = section.offsetHeight;
+      const sectionId = section.getAttribute("id");
+
+      if (
+        scrollPosition >= sectionTop &&
+        scrollPosition < sectionTop + sectionHeight
+      ) {
+        navLinks.forEach((link) => {
+          link.classList.remove("active");
+          if (link.getAttribute("href") === `#${sectionId}`) {
+            link.classList.add("active");
+          }
+        });
       }
     });
-  });
+  }
 
-  // Touch / Swipe support for mobile navigation
-  carousel.addEventListener(
-    "touchstart",
-    (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-    },
-    { passive: true }
-  );
+  window.addEventListener("scroll", highlightNavOnScroll);
+  highlightNavOnScroll();
 
-  carousel.addEventListener(
-    "touchend",
-    (e) => {
-      touchEndX = e.changedTouches[0].screenX;
-      handleSwipe();
-    },
-    { passive: true }
-  );
-
-  function handleSwipe() {
-    const swipeThreshold = 40;
-    const diff = touchStartX - touchEndX;
-
-    if (Math.abs(diff) > swipeThreshold) {
-      if (diff > 0) {
-        changePhoto(1);
+  // Back to top button
+  const backToTopBtn = document.getElementById("backToTop");
+  if (backToTopBtn) {
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.add("visible");
       } else {
-        changePhoto(-1);
+        backToTopBtn.classList.remove("visible");
       }
-      startAutoSlide();
-    }
+    });
+
+    backToTopBtn.addEventListener("click", () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    });
   }
-
-  // Hover and focus listeners for accessible auto-slide control
-  carousel.addEventListener("mouseenter", stopAutoSlide);
-  carousel.addEventListener("mouseleave", startAutoSlide);
-  carousel.addEventListener("focusin", stopAutoSlide);
-  carousel.addEventListener("focusout", startAutoSlide);
-
-  // Scoped keydown listener on the carousel container
-  carousel.addEventListener("keydown", (e) => {
-    if (e.key === "ArrowLeft") {
-      changePhoto(-1);
-      startAutoSlide();
-    } else if (e.key === "ArrowRight") {
-      changePhoto(1);
-      startAutoSlide();
-    }
-  });
-
-  updateCarousel();
-  startAutoSlide();
 });

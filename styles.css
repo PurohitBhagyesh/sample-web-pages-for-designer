@@ -90,7 +90,8 @@ img {
 }
 
 .nav-links a:hover,
-.nav-links a:focus {
+.nav-links a:focus,
+.nav-links a.active {
   background: rgba(255, 255, 255, 0.25);
   border-color: rgba(255, 255, 255, 0.4);
   transform: translateY(-2px);
@@ -363,6 +364,39 @@ img {
   border-top: 1px solid #e2e8f0;
   background: white;
   font-size: 0.9rem;
+}
+
+.back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--primary);
+  color: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+  z-index: 99;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.back-to-top:hover,
+.back-to-top:focus {
+  background: var(--primary-light);
+  transform: translateY(-4px);
+  outline: none;
 }
 
 @media (max-width: 900px) {
