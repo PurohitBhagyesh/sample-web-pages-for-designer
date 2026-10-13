@@ -209,6 +209,9 @@ img {
   border-radius: 8px;
   z-index: 10;
   transition: background 0.3s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .carousel-btn:hover,
@@ -223,6 +226,15 @@ img {
 
 .carousel-btn.next {
   right: 10px;
+}
+
+.carousel-btn.pause {
+  top: 15px;
+  right: 15px;
+  transform: none;
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 6px;
 }
 
 .carousel-dots {
@@ -471,4 +483,19 @@ img {
 .phone-link:focus {
   background: #00bfa5;
   color: white;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

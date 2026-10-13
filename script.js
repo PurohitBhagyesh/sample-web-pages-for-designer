@@ -3,22 +3,35 @@ document.addEventListener("DOMContentLoaded", () => {
   if (carousel) {
     const photos = carousel.querySelectorAll(".carousel-photo");
     const dots = carousel.querySelectorAll(".dot");
+    const dotsContainer = document.getElementById("carouselDots");
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
+    const pausePlayBtn = document.getElementById("pausePlayBtn");
     const totalPhotos = photos.length;
 
     if (totalPhotos > 0) {
       let currentPhotoIndex = 0;
       let autoSlideTimer = null;
+      let isPausedManually = false;
       let touchStartX = 0;
       let touchEndX = 0;
 
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
       // Handle broken placeholder images dynamically with SVG visual fallbacks
+      function applyFallbackImage(photo, index) {
+        const label = encodeURIComponent(`Photo ${index + 1}`);
+        photo.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="100%" height="100%" fill="%235b21b6"/><text x="50%" y="50%" fill="%23ffffff" font-family="sans-serif" font-size="24" text-anchor="middle" dominant-baseline="middle">${label}</text></svg>`;
+      }
+
       photos.forEach((photo, index) => {
-        photo.addEventListener("error", () => {
-          const label = encodeURIComponent(`Photo ${index + 1}`);
-          photo.src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="100%" height="100%" fill="%235b21b6"/><text x="50%" y="50%" fill="%23ffffff" font-family="sans-serif" font-size="24" text-anchor="middle" dominant-baseline="middle">${label}</text></svg>`;
-        });
+        photo.addEventListener("error", () => applyFallbackImage(photo, index));
+        // Fallback for already failed or cached broken images
+        if (photo.complete && photo.naturalWidth === 0) {
+          applyFallbackImage(photo, index);
+        }
       });
 
       function updateCarousel() {
@@ -48,6 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       function startAutoSlide() {
+        if (isPausedManually || prefersReducedMotion) return;
         stopAutoSlide();
         autoSlideTimer = setInterval(() => {
           changePhoto(1);
@@ -59,6 +73,32 @@ document.addEventListener("DOMContentLoaded", () => {
           clearInterval(autoSlideTimer);
           autoSlideTimer = null;
         }
+      }
+
+      function updatePausePlayBtn() {
+        if (!pausePlayBtn) return;
+        const isPaused = isPausedManually || autoSlideTimer === null;
+        pausePlayBtn.setAttribute(
+          "aria-label",
+          isPaused ? "Play slideshow" : "Pause slideshow"
+        );
+        pausePlayBtn.setAttribute(
+          "title",
+          isPaused ? "Play slideshow" : "Pause slideshow"
+        );
+        pausePlayBtn.textContent = isPaused ? "▶" : "⏸";
+      }
+
+      if (pausePlayBtn) {
+        pausePlayBtn.addEventListener("click", () => {
+          isPausedManually = !isPausedManually;
+          if (isPausedManually) {
+            stopAutoSlide();
+          } else {
+            startAutoSlide();
+          }
+          updatePausePlayBtn();
+        });
       }
 
       if (prevBtn) {
@@ -84,6 +124,33 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
       });
+
+      // Accessible arrow key navigation for dots tablist
+      if (dotsContainer) {
+        dotsContainer.addEventListener("keydown", (e) => {
+          let newIndex = currentPhotoIndex;
+          if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+            e.preventDefault();
+            newIndex = (currentPhotoIndex + 1) % totalPhotos;
+          } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+            e.preventDefault();
+            newIndex = (currentPhotoIndex - 1 + totalPhotos) % totalPhotos;
+          } else if (e.key === "Home") {
+            e.preventDefault();
+            newIndex = 0;
+          } else if (e.key === "End") {
+            e.preventDefault();
+            newIndex = totalPhotos - 1;
+          } else {
+            return;
+          }
+          goToPhoto(newIndex);
+          if (dots[newIndex]) {
+            dots[newIndex].focus();
+          }
+          startAutoSlide();
+        });
+      }
 
       // Touch / Swipe support for mobile navigation
       carousel.addEventListener(
@@ -119,12 +186,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Hover and focus listeners for accessible auto-slide control
       carousel.addEventListener("mouseenter", stopAutoSlide);
-      carousel.addEventListener("mouseleave", startAutoSlide);
+      carousel.addEventListener("mouseleave", () => {
+        if (!isPausedManually) startAutoSlide();
+      });
       carousel.addEventListener("focusin", stopAutoSlide);
-      carousel.addEventListener("focusout", startAutoSlide);
+      carousel.addEventListener("focusout", () => {
+        if (!isPausedManually) startAutoSlide();
+      });
+
+      // Stop auto-slide when page/tab is hidden to save battery and performance
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          stopAutoSlide();
+        } else if (!isPausedManually) {
+          startAutoSlide();
+        }
+      });
 
       // Scoped keydown listener on the carousel container
       carousel.addEventListener("keydown", (e) => {
+        if (e.target.closest("#carouselDots")) return;
         if (e.key === "ArrowLeft") {
           changePhoto(-1);
           startAutoSlide();
@@ -136,6 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       updateCarousel();
       startAutoSlide();
+      updatePausePlayBtn();
     }
   }
 
@@ -145,6 +227,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function highlightNavOnScroll() {
     const scrollPosition = window.scrollY + 150;
+    const isBottom =
+      window.innerHeight + window.scrollY >=
+      document.documentElement.scrollHeight - 50;
+
+    if (isBottom && sections.length > 0) {
+      const lastSectionId = sections[sections.length - 1].getAttribute("id");
+      navLinks.forEach((link) => {
+        const isCurrent = link.getAttribute("href") === `#${lastSectionId}`;
+        link.classList.toggle("active", isCurrent);
+      });
+      return;
+    }
 
     sections.forEach((section) => {
       const sectionTop = section.offsetTop;
@@ -167,6 +261,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("scroll", highlightNavOnScroll);
   highlightNavOnScroll();
+
+  // Dynamic current year in footer
+  const yearEl = document.getElementById("currentYear");
+  if (yearEl) {
+    yearEl.textContent = new Date().getFullYear();
+  }
 
   // Back to top button
   const backToTopBtn = document.getElementById("backToTop");

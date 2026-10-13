@@ -45,7 +45,7 @@
           </p>
         </div>
         <div class="profile-card">
-          <div class="photo-carousel" id="photoCarousel" tabindex="0" aria-label="Photo Gallery">
+          <div class="photo-carousel" id="photoCarousel" tabindex="0" aria-label="Photo Gallery" role="region">
             <div class="carousel-container">
               <img
                 src="photo1.jpg"
@@ -62,6 +62,9 @@
             </button>
             <button class="carousel-btn next" id="nextBtn" aria-label="Next Photo">
               ❯
+            </button>
+            <button class="carousel-btn pause" id="pausePlayBtn" aria-label="Pause slideshow" title="Pause slideshow">
+              ⏸
             </button>
             <div class="carousel-dots" id="carouselDots" role="tablist" aria-label="Gallery Dots">
               <button class="dot active" data-index="0" role="tab" aria-selected="true" aria-label="Go to photo 1"></button>
@@ -171,7 +174,7 @@
 
     <footer class="site-footer">
       <div class="container">
-        <p>Designed and built by Your Name.</p>
+        <p>&copy; <span id="currentYear"></span> Designed and built by Your Name.</p>
       </div>
     </footer>
   </body>
